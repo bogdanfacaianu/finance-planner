@@ -16,13 +16,22 @@ function Login() {
     setError('')
 
     try {
+      console.log('Attempting login with email:', email)
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
+      console.log('Supabase login response:', { data, error })
+
       if (error) {
-        console.error('Login error:', error)
+        console.error('Login error details:', {
+          message: error.message,
+          status: error.status,
+          code: error.code,
+          details: error.details
+        })
         
         // Provide helpful error messages
         if (error.message.includes('Invalid login credentials')) {
