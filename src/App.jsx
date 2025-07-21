@@ -37,8 +37,18 @@ function App() {
         <RouteDebug />
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={
+            <div style={{padding: '20px', backgroundColor: '#f0f8ff', margin: '20px'}}>
+              <h2 style={{color: '#0066cc'}}>🔐 LOGIN PAGE WORKING!</h2>
+              <Login />
+            </div>
+          } />
+          <Route path="/signup" element={
+            <div style={{padding: '20px', backgroundColor: '#f0fff0', margin: '20px'}}>
+              <h2 style={{color: '#006600'}}>✍️ SIGNUP PAGE WORKING!</h2>
+              <Signup />
+            </div>
+          } />
         </Routes>
       </BrowserRouter>
     </div>
