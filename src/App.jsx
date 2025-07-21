@@ -1,10 +1,22 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
 import './App.css'
 
+function RouteDebug() {
+  const location = useLocation()
+  console.log('Current route:', location.pathname)
+  return (
+    <div style={{backgroundColor: '#fff3cd', padding: '5px', fontSize: '12px', borderBottom: '1px solid #ffeaa7'}}>
+      Current route: {location.pathname}
+    </div>
+  )
+}
+
 function App() {
+  console.log('App rendering, current URL:', window.location.href)
+  
   return (
     <div>
       <div style={{padding: '10px', backgroundColor: '#e3f2fd', borderBottom: '2px solid #1976d2'}}>
@@ -13,6 +25,7 @@ function App() {
       </div>
       
       <BrowserRouter>
+        <RouteDebug />
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/login" element={<Login />} />
