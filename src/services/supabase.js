@@ -7,7 +7,8 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 console.log('Environment check:', {
   hasUrl: !!supabaseUrl,
   hasKey: !!supabaseAnonKey,
-  urlPrefix: supabaseUrl?.substring(0, 20),
+  fullUrl: supabaseUrl,
+  urlLength: supabaseUrl?.length,
   keyPrefix: supabaseAnonKey?.substring(0, 20)
 })
 
