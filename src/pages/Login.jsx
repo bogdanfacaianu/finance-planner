@@ -22,8 +22,18 @@ function Login() {
       })
 
       if (error) {
-        setError(error.message)
+        console.error('Login error:', error)
+        
+        // Provide helpful error messages
+        if (error.message.includes('Invalid login credentials')) {
+          setError('Invalid email or password. Make sure you have an account created.')
+        } else if (error.message.includes('Email not confirmed')) {
+          setError('Please check your email and click the confirmation link.')
+        } else {
+          setError(`Login failed: ${error.message}`)
+        }
       } else {
+        console.log('Login successful:', data)
         navigate('/')
       }
     } catch (err) {
