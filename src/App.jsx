@@ -33,7 +33,7 @@ function App() {
         <p style={{margin: '5px 0 0 0', fontSize: '14px'}}>Build: {new Date().toISOString()}</p>
       </div>
       
-      <BrowserRouter>
+      <BrowserRouter basename="/finance-planner">
         <RouteDebug />
         <Routes>
           <Route path="/" element={<Dashboard />} />
