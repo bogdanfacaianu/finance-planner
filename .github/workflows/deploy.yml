@@ -39,6 +39,13 @@ jobs:
         VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
         VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
     
+    - name: Debug - Check build output
+      run: |
+        echo "Contents of dist folder:"
+        ls -la dist/
+        echo "Contents of dist/index.html:"
+        cat dist/index.html
+    
     - name: Setup Pages
       uses: actions/configure-pages@v4
     
