@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -8,9 +10,12 @@ function Dashboard() {
               <h1 className="text-xl font-semibold">Financial Planner</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="text-gray-500 hover:text-gray-700">
-                Logout
-              </button>
+              <Link to="/login" className="text-blue-600 hover:text-blue-800">
+                Login
+              </Link>
+              <Link to="/signup" className="text-green-600 hover:text-green-800">
+                Sign Up
+              </Link>
             </div>
           </div>
         </div>
@@ -24,9 +29,23 @@ function Dashboard() {
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
                   Welcome to Financial Planner
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-gray-600 mb-6">
                   Track your expenses, manage budgets, and share costs with ease.
                 </p>
+                <div className="space-x-4">
+                  <Link 
+                    to="/signup" 
+                    className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+                  >
+                    Get Started
+                  </Link>
+                  <Link 
+                    to="/login" 
+                    className="bg-gray-600 text-white px-6 py-2 rounded-md hover:bg-gray-700"
+                  >
+                    Sign In
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
