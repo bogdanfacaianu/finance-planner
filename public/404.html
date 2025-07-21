@@ -7,6 +7,13 @@
       // Simple redirect back to main app
       console.log('404.html redirect triggered for:', window.location.href);
       var path = window.location.pathname.replace('/finance-planner', '');
+      // Clean up any extra slashes
+      if (path.startsWith('/')) {
+        path = path.substring(1);
+      }
+      if (path && !path.startsWith('/')) {
+        path = '/' + path;
+      }
       var newUrl = window.location.origin + '/finance-planner/?redirect=' + encodeURIComponent(path);
       console.log('Redirecting to:', newUrl);
       window.location.replace(newUrl);

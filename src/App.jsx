@@ -22,8 +22,9 @@ function App() {
   const redirect = urlParams.get('redirect');
   if (redirect) {
     console.log('Processing redirect to:', redirect);
-    // Remove the redirect parameter and update the URL
-    window.history.replaceState(null, null, window.location.pathname + redirect);
+    // Clean up the URL - remove redirect param and fix path
+    const cleanPath = '/finance-planner' + redirect;
+    window.history.replaceState(null, null, cleanPath);
   }
   
   return (
