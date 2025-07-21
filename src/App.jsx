@@ -17,6 +17,15 @@ function RouteDebug() {
 function App() {
   console.log('App rendering, current URL:', window.location.href)
   
+  // Handle redirects from 404.html
+  const urlParams = new URLSearchParams(window.location.search);
+  const redirect = urlParams.get('redirect');
+  if (redirect) {
+    console.log('Processing redirect to:', redirect);
+    // Remove the redirect parameter and update the URL
+    window.history.replaceState(null, null, window.location.pathname + redirect);
+  }
+  
   return (
     <div>
       <div style={{padding: '10px', backgroundColor: '#e3f2fd', borderBottom: '2px solid #1976d2'}}>
