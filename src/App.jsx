@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
+import { supabase } from './services/supabase'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
@@ -16,6 +18,32 @@ function RouteDebug() {
 
 function App() {
   console.log('App rendering, current URL:', window.location.href)
+  
+  // Handle auth callback from Supabase
+  useEffect(() => {
+    const handleAuthCallback = async () => {
+      const hash = window.location.hash
+      if (hash && hash.includes('access_token')) {
+        console.log('Processing auth callback from hash:', hash)
+        
+        try {
+          const { data, error } = await supabase.auth.getSession()
+          if (error) {
+            console.error('Auth callback error:', error)
+          } else {
+            console.log('Auth callback successful:', data)
+            // Clear the hash and redirect to dashboard
+            window.history.replaceState(null, null, '/finance-planner/')
+            window.location.reload() // Refresh to update auth state
+          }
+        } catch (err) {
+          console.error('Auth callback processing error:', err)
+        }
+      }
+    }
+    
+    handleAuthCallback()
+  }, [])
   
   // Handle redirects from 404.html
   const urlParams = new URLSearchParams(window.location.search);
