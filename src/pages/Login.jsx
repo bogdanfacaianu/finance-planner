@@ -71,6 +71,17 @@ function Login() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {/* TEST CREDENTIALS - DELETE AFTER TESTING */}
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+            <h3 className="text-sm font-medium text-yellow-800 mb-2">Test Login Credentials</h3>
+            <div className="text-sm text-yellow-700">
+              <div>Email: test@financeapp.com</div>
+              <div>Password: TestPass123!</div>
+            </div>
+            <div className="mt-2 text-xs text-yellow-600">
+              Use these credentials to test the login functionality. Remember to delete this test user afterwards.
+            </div>
+          </div>
           <form className="space-y-6" onSubmit={handleLogin}>
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
