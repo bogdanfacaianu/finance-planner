@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { supabase } from './services/supabase'
 import Login from './pages/Login'
-import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
 import './App.css'
 
@@ -70,12 +69,6 @@ function App() {
             <div style={{padding: '20px', backgroundColor: '#f0f8ff', margin: '20px'}}>
               <h2 style={{color: '#0066cc'}}>🔐 LOGIN PAGE WORKING!</h2>
               <Login />
-            </div>
-          } />
-          <Route path="/signup" element={
-            <div style={{padding: '20px', backgroundColor: '#f0fff0', margin: '20px'}}>
-              <h2 style={{color: '#006600'}}>✍️ SIGNUP PAGE WORKING!</h2>
-              <Signup />
             </div>
           } />
         </Routes>
