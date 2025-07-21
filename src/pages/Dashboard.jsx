@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import SupabaseDebug from '../components/SupabaseDebug'
 
 function Dashboard() {
   return (
@@ -50,6 +51,8 @@ function Dashboard() {
             </div>
           </div>
         </div>
+        
+        <SupabaseDebug />
       </main>
     </div>
   )
