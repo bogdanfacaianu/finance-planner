@@ -11,7 +11,12 @@
     "deploy": "vite build && gh-pages -d dist"
   },
   "dependencies": {
+    "@mantine/core": "^8.2.0",
+    "@mantine/dates": "^8.2.0",
+    "@mantine/hooks": "^8.2.0",
+    "@mantine/notifications": "^8.2.0",
     "@supabase/supabase-js": "^2.43.4",
+    "@tabler/icons-react": "^3.31.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.23.1"
