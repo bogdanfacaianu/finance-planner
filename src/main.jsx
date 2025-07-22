@@ -8,17 +8,12 @@ import '@mantine/notifications/styles.css'
 import './index.css'
 import App from './App.jsx'
 
-// main.jsx initialization
-
 const rootElement = document.getElementById('root')
 if (!rootElement) {
-  // Root element not found
   document.body.innerHTML = '<div style="padding:20px;color:red;"><h1>Root element missing!</h1></div>'
 } else {
-  // Creating React root
   try {
     const root = createRoot(rootElement)
-    // Rendering App
     root.render(
       <StrictMode>
         <MantineProvider 
@@ -57,85 +52,6 @@ if (!rootElement) {
                 }
               }
             },
-            DatePicker: {
-              styles: {
-                month: {
-                  backgroundColor: '#16213e !important'
-                },
-                day: {
-                  backgroundColor: 'transparent !important',
-                  color: '#e2e8f0 !important',
-                  '&:hover': {
-                    backgroundColor: '#3730a3 !important'
-                  },
-                  '&[data-selected]': {
-                    backgroundColor: '#3b82f6 !important',
-                    color: '#ffffff !important'
-                  },
-                  '&[data-today]': {
-                    backgroundColor: '#1e3a8a !important',
-                    color: '#e2e8f0 !important'
-                  }
-                },
-                monthCell: {
-                  color: '#e2e8f0 !important',
-                  '&:hover': {
-                    backgroundColor: '#3730a3 !important'
-                  }
-                },
-                yearCell: {
-                  color: '#e2e8f0 !important',
-                  '&:hover': {
-                    backgroundColor: '#3730a3 !important'
-                  }
-                },
-                calendarHeader: {
-                  color: '#e2e8f0 !important'
-                },
-                weekdayCell: {
-                  color: '#9ca3af !important'
-                }
-              }
-            },
-            DateInput: {
-              styles: {
-                input: {
-                  backgroundColor: '#1a1b2e !important',
-                  borderColor: '#3730a3 !important',
-                  color: '#e2e8f0 !important'
-                },
-                label: {
-                  color: '#e2e8f0 !important'
-                }
-              }
-            },
-            Select: {
-              styles: {
-                input: {
-                  backgroundColor: '#1a1b2e !important',
-                  borderColor: '#3730a3 !important',
-                  color: '#e2e8f0 !important'
-                },
-                label: {
-                  color: '#e2e8f0 !important'
-                },
-                dropdown: {
-                  backgroundColor: '#16213e !important',
-                  border: '1px solid #3730a3 !important'
-                },
-                option: {
-                  backgroundColor: 'transparent !important',
-                  color: '#e2e8f0 !important',
-                  '&:hover': {
-                    backgroundColor: '#3730a3 !important'
-                  },
-                  '&[data-selected]': {
-                    backgroundColor: '#3b82f6 !important',
-                    color: '#ffffff !important'
-                  }
-                }
-              }
-            }
           }
         }}>
           <Notifications />
@@ -143,9 +59,7 @@ if (!rootElement) {
         </MantineProvider>
       </StrictMode>
     )
-    // App rendered successfully
   } catch (error) {
-    // React render error
     document.body.innerHTML = `<div style="padding:20px;color:red;"><h1>React Error</h1><p>${error.message}</p></div>`
   }
 }

@@ -24,9 +24,10 @@ class AuthService {
 
       return { data, error: null }
     } catch (err) {
+      console.error('Auth service error:', err)
       return {
         data: null,
-        error: AuthErrors.UNEXPECTED_ERROR
+        error: `Authentication failed: ${err.message || 'Unknown error'}`
       }
     }
   }
