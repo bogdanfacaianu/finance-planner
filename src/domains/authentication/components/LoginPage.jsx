@@ -64,7 +64,6 @@ function LoginPage() {
       if (error) {
         setError(error)
       } else {
-        console.log('Login successful:', data)
         navigate('/')
       }
     } catch (err) {
