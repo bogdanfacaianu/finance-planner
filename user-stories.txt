@@ -1,5 +1,4 @@
 Category,Title,Description
-Authentication,User Signup,"As a user, I can sign up with my email/password, so that I can securely access my financial planner."
 Authentication,User Login,"As a user, I can log in using email/password, so that I can access my financial data securely."
 Authentication,User Logout,"As a user, I want to be able to logout, so my data remains secure when I'm not actively using the app."
 Authentication,Password Reset,"As a user, I want to reset my password via email, ensuring continuous secure access if I forget my password."
