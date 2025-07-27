@@ -10,6 +10,11 @@ export const BudgetEntity = {
   MONTHLY_LIMIT: 'number',
   MONTH: 'number',
   YEAR: 'number',
+  CATEGORY_TYPE: 'string', // 'fixed' or 'flexible'
+  RECURRENCE_TYPE: 'string', // 'recurring' or 'one-off'
+  WORKDAYS_PER_MONTH: 'number|null',
+  CATEGORY_GROUP: 'string|null',
+  AUTO_CALCULATE: 'boolean',
   CREATED_AT: 'timestamp'
 }
 
@@ -18,11 +23,21 @@ export const CreateBudgetRequest = {
   category: 'string',
   monthly_limit: 'number',
   month: 'number',
-  year: 'number'
+  year: 'number',
+  category_type: 'string',
+  recurrence_type: 'string',
+  workdays_per_month: 'number|null',
+  category_group: 'string|null',
+  auto_calculate: 'boolean'
 }
 
 export const UpdateBudgetRequest = {
-  monthly_limit: 'number'
+  monthly_limit: 'number',
+  category_type: 'string',
+  recurrence_type: 'string',
+  workdays_per_month: 'number|null',
+  category_group: 'string|null',
+  auto_calculate: 'boolean'
 }
 
 // Budget status types
@@ -95,4 +110,58 @@ export const BudgetValidation = {
 export const BudgetAlertThresholds = {
   NEAR_LIMIT_PERCENTAGE: 80, // Alert when 80% of budget is spent
   OVER_BUDGET_PERCENTAGE: 100 // Alert when budget is exceeded
+}
+
+// Budget category types
+export const BudgetCategoryTypes = {
+  FIXED: 'fixed',
+  FLEXIBLE: 'flexible'
+}
+
+// Budget recurrence types
+export const BudgetRecurrenceTypes = {
+  RECURRING: 'recurring',
+  ONE_OFF: 'one-off'
+}
+
+// Predefined category groups
+export const CategoryGroups = {
+  WORK_DAY_COSTS: 'Work Day Costs',
+  ESSENTIAL_BILLS: 'Essential Bills',
+  LIFESTYLE: 'Lifestyle',
+  TRANSPORT: 'Transport',
+  ENTERTAINMENT: 'Entertainment',
+  HEALTH_WELLNESS: 'Health & Wellness',
+  CUSTOM: 'Custom'
+}
+
+// Budget validation (enhanced)
+export const BudgetValidationEnhanced = {
+  ...BudgetValidation,
+  
+  validateCategoryType: (categoryType) => {
+    return Object.values(BudgetCategoryTypes).includes(categoryType)
+  },
+
+  validateRecurrenceType: (recurrenceType) => {
+    return Object.values(BudgetRecurrenceTypes).includes(recurrenceType)
+  },
+
+  validateWorkdaysPerMonth: (workdays) => {
+    if (workdays === null || workdays === undefined) return true
+    const numWorkdays = parseInt(workdays)
+    return !isNaN(numWorkdays) && numWorkdays >= 1 && numWorkdays <= 31
+  },
+
+  validateCategoryGroup: (group) => {
+    if (!group) return true
+    return typeof group === 'string' && group.trim().length > 0
+  },
+
+  calculateAutoAmount: (categoryType, workdaysPerMonth, dailyAmount) => {
+    if (categoryType === BudgetCategoryTypes.FIXED || !workdaysPerMonth || !dailyAmount) {
+      return null
+    }
+    return parseFloat(dailyAmount) * parseInt(workdaysPerMonth)
+  }
 }

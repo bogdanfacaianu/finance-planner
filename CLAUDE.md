@@ -100,7 +100,21 @@ Run these SQL commands in Supabase SQL editor:
 ```sql
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Expenses table
+-- User Categories table (custom spending categories)
+CREATE TABLE user_categories (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) NOT NULL,
+  name TEXT NOT NULL,
+  color TEXT NOT NULL,
+  icon TEXT NOT NULL,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT now(),
+  UNIQUE(user_id, name, is_active)
+);
+ALTER TABLE user_categories ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "User data only" ON user_categories USING (auth.uid() = user_id);
+
+-- Expenses table (enhanced with transaction types)
 CREATE TABLE expenses (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES auth.users(id),
@@ -108,12 +122,17 @@ CREATE TABLE expenses (
   category TEXT NOT NULL,
   date DATE NOT NULL DEFAULT CURRENT_DATE,
   notes TEXT,
+  transaction_type TEXT DEFAULT 'personal' CHECK(transaction_type IN ('personal', 'reimbursable', 'shared')),
+  reimbursement_status TEXT CHECK(reimbursement_status IN ('pending', 'submitted', 'approved', 'paid', 'rejected')),
+  shared_with TEXT,
+  shared_amount NUMERIC,
+  reference_number TEXT,
   created_at TIMESTAMP DEFAULT now()
 );
 ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "User data only" ON expenses USING (auth.uid() = user_id);
 
--- Budgets table (future use)
+-- Budgets table (enhanced with advanced properties)
 CREATE TABLE budgets (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES auth.users(id),
@@ -121,10 +140,76 @@ CREATE TABLE budgets (
   monthly_limit NUMERIC NOT NULL,
   month INT NOT NULL,
   year INT NOT NULL,
+  category_type TEXT DEFAULT 'flexible' CHECK(category_type IN ('fixed', 'flexible')),
+  recurrence_type TEXT DEFAULT 'recurring' CHECK(recurrence_type IN ('recurring', 'one-off')),
+  workdays_per_month INT DEFAULT NULL,
+  category_group TEXT DEFAULT NULL,
+  auto_calculate BOOLEAN DEFAULT false,
   created_at TIMESTAMP DEFAULT now()
 );
 ALTER TABLE budgets ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "User data only" ON budgets USING (auth.uid() = user_id);
+
+-- Recurring Transactions table
+CREATE TABLE recurring_transactions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT,
+  amount NUMERIC NOT NULL,
+  category TEXT NOT NULL,
+  frequency TEXT NOT NULL CHECK(frequency IN ('daily', 'weekly', 'monthly', 'yearly', 'custom')),
+  frequency_config JSONB NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE,
+  status TEXT DEFAULT 'active' CHECK(status IN ('active', 'paused', 'ended')),
+  next_generation_date DATE NOT NULL,
+  last_generated_date DATE,
+  total_generated INT DEFAULT 0,
+  max_generations INT,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT now(),
+  updated_at TIMESTAMP DEFAULT now()
+);
+ALTER TABLE recurring_transactions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "User data only" ON recurring_transactions USING (auth.uid() = user_id);
+
+-- Alerts table
+CREATE TABLE alerts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) NOT NULL,
+  alert_type TEXT NOT NULL CHECK(alert_type IN ('budget_warning', 'budget_exceeded', 'monthly_summary', 'payday_reminder', 'savings_goal', 'recurring_due', 'expense_anomaly')),
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  severity TEXT DEFAULT 'info' CHECK(severity IN ('info', 'warning', 'critical', 'success')),
+  status TEXT DEFAULT 'active' CHECK(status IN ('active', 'dismissed', 'read', 'snoozed')),
+  trigger_type TEXT DEFAULT 'manual' CHECK(trigger_type IN ('budget_threshold', 'time_based', 'manual', 'system_generated')),
+  trigger_data JSONB DEFAULT '{}',
+  channels TEXT[] DEFAULT ARRAY['in_app'],
+  created_at TIMESTAMP DEFAULT now(),
+  updated_at TIMESTAMP DEFAULT now(),
+  dismissed_at TIMESTAMP,
+  snoozed_until TIMESTAMP
+);
+ALTER TABLE alerts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "User data only" ON alerts USING (auth.uid() = user_id);
+
+-- Create index for better alert querying performance
+CREATE INDEX idx_alerts_user_status ON alerts(user_id, status);
+CREATE INDEX idx_alerts_user_type ON alerts(user_id, alert_type);
+CREATE INDEX idx_alerts_created_at ON alerts(created_at DESC);
+
+-- User Preferences table (for payday reminders and other user settings)
+CREATE TABLE user_preferences (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) NOT NULL,
+  preference_type TEXT NOT NULL,
+  preference_data JSONB NOT NULL,
+  updated_at TIMESTAMP DEFAULT now(),
+  UNIQUE(user_id, preference_type)
+);
+ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "User data only" ON user_preferences USING (auth.uid() = user_id);
 
 -- Rides table (shared expenses - future use)
 CREATE TABLE rides (

@@ -15,19 +15,23 @@ import {
   Divider,
   Box
 } from '@mantine/core'
-import { IconInfoCircle, IconEdit, IconTrash, IconCurrencyPound } from '@tabler/icons-react'
+import { IconInfoCircle, IconEdit, IconTrash, IconCurrencyPound, IconUser, IconRefresh, IconUsers } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
 import { expenseService } from '../services/ExpenseService'
-import { getCategoryOptions, getCategoryColor } from '../constants/categories'
+import { categoryService } from 'src/domains/category-management/services/CategoryService'
+import { TransactionTypes, TransactionTypeMetadata, ReimbursementStatus } from '../types'
 
 function ExpensesList({ refreshTrigger, onEdit }) {
   const [expenses, setExpenses] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [categories, setCategories] = useState([])
   const [filters, setFilters] = useState({
     month: new Date().getMonth() + 1, // Current month (1-12)
     year: new Date().getFullYear(),
-    category: 'all'
+    category: 'all',
+    transaction_type: 'all',
+    reimbursement_status: 'all'
   })
 
   const loadExpenses = async () => {
@@ -36,7 +40,9 @@ function ExpensesList({ refreshTrigger, onEdit }) {
       const filterParams = {
         month: filters.month === 'all' ? null : filters.month,
         year: filters.year === 'all' ? null : filters.year,
-        category: filters.category === 'all' ? null : filters.category
+        category: filters.category === 'all' ? null : filters.category,
+        transaction_type: filters.transaction_type === 'all' ? null : filters.transaction_type,
+        reimbursement_status: filters.reimbursement_status === 'all' ? null : filters.reimbursement_status
       }
       
       const { data, error } = await expenseService.getExpenses(filterParams)
@@ -57,6 +63,33 @@ function ExpensesList({ refreshTrigger, onEdit }) {
   useEffect(() => {
     loadExpenses()
   }, [filters, refreshTrigger])
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const { data, error: categoriesError } = await categoryService.getCategories({ is_active: true })
+        if (!categoriesError && data) {
+          setCategories(data)
+        }
+      } catch (err) {
+        console.error('Error loading categories:', err)
+      }
+    }
+
+    loadCategories()
+  }, [])
+
+  const getCategoryColor = (categoryName) => {
+    const category = categories.find(cat => cat.name === categoryName)
+    return category?.color || 'gray'
+  }
+
+  const getCategoryOptions = () => {
+    return [
+      { value: 'all', label: 'All Categories' },
+      ...categories.map(cat => ({ value: cat.name, label: cat.name }))
+    ]
+  }
 
   const handleFilterChange = (name, value) => {
     setFilters(prev => ({
@@ -129,10 +162,7 @@ function ExpensesList({ refreshTrigger, onEdit }) {
   ]
 
   // Category options for filter
-  const categoryFilterOptions = [
-    { value: 'all', label: 'All Categories' },
-    ...getCategoryOptions()
-  ]
+  const categoryFilterOptions = getCategoryOptions()
 
   return (
     <Paper withBorder shadow="sm" radius="md" bg="navy.1" style={{ borderColor: '#3730a3' }}>
@@ -168,6 +198,38 @@ function ExpensesList({ refreshTrigger, onEdit }) {
             style={{ flex: 1 }}
             searchable
           />
+          
+          <Select
+            label="Transaction Type"
+            value={filters.transaction_type}
+            onChange={(value) => handleFilterChange('transaction_type', value)}
+            data={[
+              { value: 'all', label: 'All Types' },
+              ...Object.values(TransactionTypes).map(type => ({
+                value: type,
+                label: TransactionTypeMetadata[type].label
+              }))
+            ]}
+            size="sm"
+            style={{ flex: 1 }}
+          />
+          
+          {filters.transaction_type === TransactionTypes.REIMBURSABLE && (
+            <Select
+              label="Reimbursement Status"
+              value={filters.reimbursement_status}
+              onChange={(value) => handleFilterChange('reimbursement_status', value)}
+              data={[
+                { value: 'all', label: 'All Statuses' },
+                ...Object.values(ReimbursementStatus).map(status => ({
+                  value: status,
+                  label: status.charAt(0).toUpperCase() + status.slice(1)
+                }))
+              ]}
+              size="sm"
+              style={{ flex: 1 }}
+            />
+          )}
         </Group>
 
         {/* Summary */}
@@ -231,10 +293,61 @@ function ExpensesList({ refreshTrigger, onEdit }) {
                       >
                         {expense.category}
                       </Badge>
+                      <Badge 
+                        color={TransactionTypeMetadata[expense.transaction_type || TransactionTypes.PERSONAL]?.color || 'blue'}
+                        variant="light"
+                        size="sm"
+                        leftSection={
+                          expense.transaction_type === TransactionTypes.REIMBURSABLE ? <IconRefresh size={12} /> :
+                          expense.transaction_type === TransactionTypes.SHARED ? <IconUsers size={12} /> :
+                          <IconUser size={12} />
+                        }
+                      >
+                        {TransactionTypeMetadata[expense.transaction_type || TransactionTypes.PERSONAL]?.label || 'Personal'}
+                      </Badge>
                       <Text size="sm" c="dimmed">
                         {formatDate(expense.date)}
                       </Text>
                     </Group>
+                    
+                    {/* Additional info for non-personal transactions */}
+                    {(expense.transaction_type === TransactionTypes.REIMBURSABLE || expense.transaction_type === TransactionTypes.SHARED) && (
+                      <Group gap="md" mt="xs">
+                        {expense.transaction_type === TransactionTypes.REIMBURSABLE && (
+                          <>
+                            {expense.reimbursement_status && (
+                              <Badge
+                                color={expense.reimbursement_status === 'paid' ? 'green' : 
+                                      expense.reimbursement_status === 'rejected' ? 'red' : 'yellow'}
+                                variant="outline"
+                                size="xs"
+                              >
+                                Status: {expense.reimbursement_status}
+                              </Badge>
+                            )}
+                            {expense.reference_number && (
+                              <Text size="xs" c="dimmed">
+                                Ref: {expense.reference_number}
+                              </Text>
+                            )}
+                          </>
+                        )}
+                        {expense.transaction_type === TransactionTypes.SHARED && (
+                          <>
+                            {expense.shared_with && (
+                              <Text size="xs" c="dimmed">
+                                Shared with: {expense.shared_with}
+                              </Text>
+                            )}
+                            {expense.shared_amount && (
+                              <Text size="xs" c="dimmed">
+                                Your share: {formatAmount(expense.shared_amount)}
+                              </Text>
+                            )}
+                          </>
+                        )}
+                      </Group>
+                    )}
                     {expense.notes && (
                       <Text size="sm" c="dimmed" lineClamp={2}>
                         {expense.notes}

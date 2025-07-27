@@ -2,6 +2,44 @@
  * Expense Management Domain Types
  */
 
+// Transaction Types for filtering and reporting
+export const TransactionTypes = {
+  PERSONAL: 'personal',
+  REIMBURSABLE: 'reimbursable',
+  SHARED: 'shared'
+}
+
+// Transaction Type Metadata
+export const TransactionTypeMetadata = {
+  [TransactionTypes.PERSONAL]: {
+    label: 'Personal',
+    description: 'Personal expenses that you pay for yourself',
+    color: 'blue',
+    icon: 'IconUser'
+  },
+  [TransactionTypes.REIMBURSABLE]: {
+    label: 'Reimbursable',
+    description: 'Expenses that will be reimbursed by employer or others',
+    color: 'green',
+    icon: 'IconRefresh'
+  },
+  [TransactionTypes.SHARED]: {
+    label: 'Shared',
+    description: 'Expenses shared with others (will be split)',
+    color: 'orange',
+    icon: 'IconUsers'
+  }
+}
+
+// Transaction Status for reimbursables
+export const ReimbursementStatus = {
+  PENDING: 'pending',
+  SUBMITTED: 'submitted',
+  APPROVED: 'approved',
+  PAID: 'paid',
+  REJECTED: 'rejected'
+}
+
 /**
  * @typedef {Object} Expense
  * @property {string} id - Unique expense identifier
@@ -10,6 +48,11 @@
  * @property {string} category - Expense category
  * @property {string} date - Expense date (YYYY-MM-DD)
  * @property {string|null} notes - Optional expense notes
+ * @property {string} transaction_type - Transaction type (personal, reimbursable, shared)
+ * @property {string|null} reimbursement_status - Status for reimbursable expenses
+ * @property {string|null} shared_with - Who the expense is shared with
+ * @property {number|null} shared_amount - Amount you're responsible for in shared expenses
+ * @property {string|null} reference_number - Reference number for reimbursable expenses
  * @property {string} created_at - Creation timestamp
  */
 
@@ -19,6 +62,11 @@
  * @property {string} category - Expense category
  * @property {string} date - Expense date (YYYY-MM-DD)
  * @property {string} [notes] - Optional expense notes
+ * @property {string} transaction_type - Transaction type (personal, reimbursable, shared)
+ * @property {string} [reimbursement_status] - Status for reimbursable expenses
+ * @property {string} [shared_with] - Who the expense is shared with
+ * @property {number} [shared_amount] - Amount you're responsible for in shared expenses
+ * @property {string} [reference_number] - Reference number for reimbursable expenses
  */
 
 /**
@@ -27,6 +75,11 @@
  * @property {string} [category] - Updated expense category
  * @property {string} [date] - Updated expense date (YYYY-MM-DD)
  * @property {string} [notes] - Updated expense notes
+ * @property {string} [transaction_type] - Updated transaction type
+ * @property {string} [reimbursement_status] - Updated reimbursement status
+ * @property {string} [shared_with] - Updated shared with
+ * @property {number} [shared_amount] - Updated shared amount
+ * @property {string} [reference_number] - Updated reference number
  */
 
 /**
@@ -34,6 +87,8 @@
  * @property {number|null} month - Filter by month (1-12)
  * @property {number|null} year - Filter by year
  * @property {string|null} category - Filter by category
+ * @property {string|null} transaction_type - Filter by transaction type
+ * @property {string|null} reimbursement_status - Filter by reimbursement status
  */
 
 /**
