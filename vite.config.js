@@ -4,8 +4,8 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig(() => {
-  // Use '/finance-planner' for both GitHub Pages and Cloudflare Pages
-  const base = '/finance-planner'
+  // Use root path for Cloudflare Pages deployment
+  const base = '/'
   
   return {
     plugins: [react()],
