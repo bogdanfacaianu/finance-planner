@@ -11,14 +11,13 @@ import {
   Loader,
   Center,
   Card,
-  Grid,
   Badge,
   ActionIcon,
   Avatar,
   Tooltip,
   Divider
 } from '@mantine/core'
-import { IconLogout, IconPlus, IconWallet, IconTrendingUp, IconUser, IconChartPie, IconArrowRight, IconCategory, IconDashboard, IconFileImport, IconCalendarRepeat, IconBell, IconSettings, IconRobot } from '@tabler/icons-react'
+import { IconLogout, IconPlus, IconWallet, IconTrendingUp, IconUser, IconChartPie, IconArrowRight, IconCategory, IconDashboard, IconFileImport, IconCalendarRepeat, IconSettings, IconRobot } from '@tabler/icons-react'
 import { authService } from 'src/domains/authentication/services/AuthService'
 import ExpenseForm from 'src/domains/expense-management/components/ExpenseForm'
 import ExpensesList from 'src/domains/expense-management/components/ExpensesList'

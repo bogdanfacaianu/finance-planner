@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { useEffect } from 'react'
 import LoginPage from './domains/authentication/components/LoginPage'
 import DashboardPage from './app/pages/DashboardPage'
 import BudgetPage from './app/pages/BudgetPage'

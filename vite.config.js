@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(() => {
   // Use '/finance-planner' for both GitHub Pages and Cloudflare Pages
   const base = '/finance-planner'
   
