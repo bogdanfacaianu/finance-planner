@@ -6,12 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:github": "vite build --mode github",
-    "build:cloudflare": "vite build --mode production",
     "lint": "eslint .",
     "preview": "vite preview",
     "deploy": "vite build && gh-pages -d dist",
-    "deploy:github": "npm run build:github && gh-pages -d dist",
     "migrate": "node scripts/migrate.js run",
     "migrate:status": "node scripts/migrate.js status"
   },
