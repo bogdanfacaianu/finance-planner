@@ -1,7 +1,15 @@
 import { supabase } from 'src/shared/infrastructure/supabase'
 import { authService } from 'src/domains/authentication/services/AuthService'
 import { expenseService } from 'src/domains/expense-management/services/ExpenseService'
-import { BudgetErrors, BudgetValidation, BudgetStatus, BudgetAlertThresholds } from 'src/domains/budget-management/types'
+import { 
+  BudgetErrors, 
+  BudgetValidation, 
+  BudgetValidationEnhanced,
+  BudgetStatus, 
+  BudgetAlertThresholds,
+  BudgetCategoryTypes,
+  BudgetRecurrenceTypes 
+} from 'src/domains/budget-management/types'
 
 /**
  * Budget Service
@@ -42,15 +50,29 @@ class BudgetService {
       }
 
       // Create budget
+      const budgetRecord = {
+        user_id: user.id,
+        category: budgetData.category,
+        monthly_limit: parseFloat(budgetData.monthly_limit),
+        month: parseInt(budgetData.month),
+        year: parseInt(budgetData.year),
+        category_type: budgetData.category_type || BudgetCategoryTypes.FLEXIBLE,
+        recurrence_type: budgetData.recurrence_type || BudgetRecurrenceTypes.RECURRING,
+        auto_calculate: budgetData.auto_calculate || false
+      }
+
+      // Add optional fields if provided
+      if (budgetData.workdays_per_month) {
+        budgetRecord.workdays_per_month = parseInt(budgetData.workdays_per_month)
+      }
+      
+      if (budgetData.category_group) {
+        budgetRecord.category_group = budgetData.category_group
+      }
+
       const { data, error } = await supabase
         .from('budgets')
-        .insert([{
-          user_id: user.id,
-          category: budgetData.category,
-          monthly_limit: parseFloat(budgetData.monthly_limit),
-          month: parseInt(budgetData.month),
-          year: parseInt(budgetData.year)
-        }])
+        .insert([budgetRecord])
         .select()
         .single()
 
@@ -192,16 +214,35 @@ class BudgetService {
       }
 
       // Validate update data
-      if (!BudgetValidation.validateAmount(updates.monthly_limit)) {
+      if (updates.monthly_limit && !BudgetValidation.validateAmount(updates.monthly_limit)) {
         return { data: null, error: BudgetErrors.INVALID_AMOUNT }
       }
+
+      if (updates.category_type && !BudgetValidationEnhanced.validateCategoryType(updates.category_type)) {
+        return { data: null, error: BudgetErrors.INVALID_BUDGET_DATA }
+      }
+
+      if (updates.recurrence_type && !BudgetValidationEnhanced.validateRecurrenceType(updates.recurrence_type)) {
+        return { data: null, error: BudgetErrors.INVALID_BUDGET_DATA }
+      }
+
+      if (updates.workdays_per_month && !BudgetValidationEnhanced.validateWorkdaysPerMonth(updates.workdays_per_month)) {
+        return { data: null, error: BudgetErrors.INVALID_BUDGET_DATA }
+      }
+
+      // Prepare update object
+      const updateData = {}
+      if (updates.monthly_limit) updateData.monthly_limit = parseFloat(updates.monthly_limit)
+      if (updates.category_type) updateData.category_type = updates.category_type
+      if (updates.recurrence_type) updateData.recurrence_type = updates.recurrence_type
+      if (updates.workdays_per_month) updateData.workdays_per_month = parseInt(updates.workdays_per_month)
+      if (updates.category_group !== undefined) updateData.category_group = updates.category_group
+      if (updates.auto_calculate !== undefined) updateData.auto_calculate = updates.auto_calculate
 
       // Update budget
       const { data, error } = await supabase
         .from('budgets')
-        .update({
-          monthly_limit: parseFloat(updates.monthly_limit)
-        })
+        .update(updateData)
         .eq('id', budgetId)
         .eq('user_id', user.id)
         .select()
@@ -306,6 +347,23 @@ class BudgetService {
 
     if (!BudgetValidation.validateYear(budgetData.year)) {
       return BudgetErrors.INVALID_YEAR
+    }
+
+    // Validate new advanced properties
+    if (budgetData.category_type && !BudgetValidationEnhanced.validateCategoryType(budgetData.category_type)) {
+      return BudgetErrors.INVALID_BUDGET_DATA
+    }
+
+    if (budgetData.recurrence_type && !BudgetValidationEnhanced.validateRecurrenceType(budgetData.recurrence_type)) {
+      return BudgetErrors.INVALID_BUDGET_DATA
+    }
+
+    if (budgetData.workdays_per_month && !BudgetValidationEnhanced.validateWorkdaysPerMonth(budgetData.workdays_per_month)) {
+      return BudgetErrors.INVALID_BUDGET_DATA
+    }
+
+    if (budgetData.category_group && !BudgetValidationEnhanced.validateCategoryGroup(budgetData.category_group)) {
+      return BudgetErrors.INVALID_BUDGET_DATA
     }
 
     return null

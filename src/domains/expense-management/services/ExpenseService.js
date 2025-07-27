@@ -1,6 +1,6 @@
 import { supabase } from 'src/shared/infrastructure/supabase'
 import { authService } from 'src/domains/authentication/services/AuthService'
-import { ExpenseErrors, ExpenseValidation } from 'src/domains/expense-management/types'
+import { ExpenseErrors, ExpenseValidation, TransactionTypes } from 'src/domains/expense-management/types'
 
 /**
  * Expense Service
@@ -35,7 +35,12 @@ class ExpenseService {
             amount: parseFloat(expenseData.amount),
             category: expenseData.category,
             date: expenseData.date,
-            notes: expenseData.notes || null
+            notes: expenseData.notes || null,
+            transaction_type: expenseData.transaction_type || TransactionTypes.PERSONAL,
+            reimbursement_status: expenseData.reimbursement_status || null,
+            shared_with: expenseData.shared_with || null,
+            shared_amount: expenseData.shared_amount ? parseFloat(expenseData.shared_amount) : null,
+            reference_number: expenseData.reference_number || null
           }
         ])
         .select()
@@ -77,6 +82,14 @@ class ExpenseService {
 
       if (filters.category && filters.category !== 'all') {
         query = query.eq('category', filters.category)
+      }
+
+      if (filters.transaction_type && filters.transaction_type !== 'all') {
+        query = query.eq('transaction_type', filters.transaction_type)
+      }
+
+      if (filters.reimbursement_status && filters.reimbursement_status !== 'all') {
+        query = query.eq('reimbursement_status', filters.reimbursement_status)
       }
 
       const { data, error } = await query.order('date', { ascending: false })
@@ -245,6 +258,21 @@ class ExpenseService {
     // Validate notes length
     if (expenseData.notes && expenseData.notes.length > ExpenseValidation.MAX_NOTES_LENGTH) {
       return `Notes must be less than ${ExpenseValidation.MAX_NOTES_LENGTH} characters`
+    }
+
+    // Validate transaction type
+    if (expenseData.transaction_type && !Object.values(TransactionTypes).includes(expenseData.transaction_type)) {
+      return 'Invalid transaction type'
+    }
+
+    // Validate shared amount if transaction is shared
+    if (expenseData.transaction_type === TransactionTypes.SHARED) {
+      if (expenseData.shared_amount !== undefined) {
+        const sharedAmount = parseFloat(expenseData.shared_amount)
+        if (isNaN(sharedAmount) || sharedAmount <= 0 || sharedAmount > amount) {
+          return 'Shared amount must be valid and not exceed total amount'
+        }
+      }
     }
 
     return null

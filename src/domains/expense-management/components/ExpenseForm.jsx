@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Paper,
   Title,
@@ -8,23 +8,54 @@ import {
   Button,
   Stack,
   Alert,
-  Group
+  Group,
+  TextInput,
+  Divider,
+  Badge,
+  Text,
+  Collapse
 } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
-import { IconInfoCircle, IconCurrencyDollar, IconCalendar } from '@tabler/icons-react'
+import { IconInfoCircle, IconCurrencyDollar, IconCalendar, IconUser, IconRefresh, IconUsers } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
 import { expenseService } from 'src/domains/expense-management/services/ExpenseService'
-import { getCategoryOptions } from 'src/domains/expense-management/constants/categories'
+import { categoryService } from 'src/domains/category-management/services/CategoryService'
+import { TransactionTypes, TransactionTypeMetadata, ReimbursementStatus } from 'src/domains/expense-management/types'
 
 function ExpenseForm({ onExpenseAdded, onCancel }) {
   const [formData, setFormData] = useState({
     amount: '',
     category: '',
     date: new Date(),
-    notes: ''
+    notes: '',
+    transaction_type: TransactionTypes.PERSONAL,
+    reimbursement_status: null,
+    shared_with: '',
+    shared_amount: '',
+    reference_number: ''
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [categories, setCategories] = useState([])
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      setCategoriesLoading(true)
+      try {
+        const { data, error: categoriesError } = await categoryService.getCategories({ is_active: true })
+        if (!categoriesError && data) {
+          setCategories(data.map(cat => ({ value: cat.name, label: cat.name })))
+        }
+      } catch (err) {
+        console.error('Error loading categories:', err)
+      } finally {
+        setCategoriesLoading(false)
+      }
+    }
+
+    loadCategories()
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -48,7 +79,12 @@ function ExpenseForm({ onExpenseAdded, onCancel }) {
           amount: '',
           category: '',
           date: new Date(),
-          notes: ''
+          notes: '',
+          transaction_type: TransactionTypes.PERSONAL,
+          reimbursement_status: null,
+          shared_with: '',
+          shared_amount: '',
+          reference_number: ''
         })
 
         // Show success notification
@@ -101,7 +137,8 @@ function ExpenseForm({ onExpenseAdded, onCancel }) {
               placeholder="Select a category"
               value={formData.category}
               onChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
-              data={getCategoryOptions()}
+              data={categories}
+              disabled={categoriesLoading}
               required
               withAsterisk
               searchable
@@ -171,6 +208,88 @@ function ExpenseForm({ onExpenseAdded, onCancel }) {
             minRows={2}
             maxRows={4}
           />
+
+          <Divider label="Transaction Type" labelPosition="left" />
+
+          <Select
+            label="Transaction Type"
+            description="How should this expense be categorized?"
+            value={formData.transaction_type}
+            onChange={(value) => setFormData(prev => ({ 
+              ...prev, 
+              transaction_type: value,
+              // Reset dependent fields when transaction type changes
+              reimbursement_status: value === TransactionTypes.REIMBURSABLE ? ReimbursementStatus.PENDING : null,
+              shared_with: value === TransactionTypes.SHARED ? prev.shared_with : '',
+              shared_amount: value === TransactionTypes.SHARED ? prev.shared_amount : '',
+              reference_number: value === TransactionTypes.REIMBURSABLE ? prev.reference_number : ''
+            }))}
+            data={Object.values(TransactionTypes).map(type => ({
+              value: type,
+              label: TransactionTypeMetadata[type].label,
+              description: TransactionTypeMetadata[type].description
+            }))}
+            required
+            withAsterisk
+          />
+
+          {/* Reimbursable Fields */}
+          <Collapse in={formData.transaction_type === TransactionTypes.REIMBURSABLE}>
+            <Stack gap="sm" mt="md">
+              <Text size="sm" fw={500} c="dimmed">
+                Reimbursable Expense Details
+              </Text>
+              <Group grow>
+                <Select
+                  label="Reimbursement Status"
+                  value={formData.reimbursement_status}
+                  onChange={(value) => setFormData(prev => ({ ...prev, reimbursement_status: value }))}
+                  data={Object.values(ReimbursementStatus).map(status => ({
+                    value: status,
+                    label: status.charAt(0).toUpperCase() + status.slice(1)
+                  }))}
+                />
+                <TextInput
+                  label="Reference Number"
+                  placeholder="Receipt #, Request ID, etc."
+                  value={formData.reference_number}
+                  onChange={(e) => setFormData(prev => ({ ...prev, reference_number: e.target.value }))}
+                />
+              </Group>
+            </Stack>
+          </Collapse>
+
+          {/* Shared Expense Fields */}
+          <Collapse in={formData.transaction_type === TransactionTypes.SHARED}>
+            <Stack gap="sm" mt="md">
+              <Text size="sm" fw={500} c="dimmed">
+                Shared Expense Details
+              </Text>
+              <Group grow>
+                <TextInput
+                  label="Shared With"
+                  placeholder="Who is this expense shared with?"
+                  value={formData.shared_with}
+                  onChange={(e) => setFormData(prev => ({ ...prev, shared_with: e.target.value }))}
+                />
+                <NumberInput
+                  label="Your Share ($)"
+                  placeholder="Your portion of the expense"
+                  value={formData.shared_amount}
+                  onChange={(value) => setFormData(prev => ({ ...prev, shared_amount: value }))}
+                  min={0}
+                  step={0.01}
+                  precision={2}
+                  max={parseFloat(formData.amount) || undefined}
+                />
+              </Group>
+              {formData.amount && formData.shared_amount && (
+                <Text size="xs" c="dimmed">
+                  Others' share: ${(parseFloat(formData.amount) - parseFloat(formData.shared_amount || 0)).toFixed(2)}
+                </Text>
+              )}
+            </Stack>
+          </Collapse>
 
           <Group justify="flex-end" gap="md">
             {onCancel && (
